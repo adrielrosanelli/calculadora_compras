@@ -14,16 +14,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (contex) => ThemeDataProvider(),
-      child: Consumer<ThemeDataProvider>(
-        builder: (context,provider,child) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Calculadora de Compras',
-            theme: Provider.of<ThemeDataProvider>(context).themeData,
-            home: const MyHomePage(title: 'Calculadora de compras'),
-          );
-        }
-      ),
+      child: Consumer<ThemeDataProvider>(builder: (context, provider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Calculadora de Compras',
+          theme: Provider.of<ThemeDataProvider>(context).themeData,
+          home: const MyHomePage(title: 'Calculadora de compras'),
+        );
+      }),
     );
   }
 }
@@ -45,7 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _addItemToList(Item newValue) {
     int? index;
     for (var i = 0; i < items.length; i++) {
-      if (items[i].name.toLowerCase() == newValue.name.toLowerCase()) {
+      if (items[i].name.trim().toLowerCase() ==
+          newValue.name.trim().toLowerCase()) {
         index = i;
       }
     }
@@ -99,8 +98,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child: TextFormField(
                 controller: _nameController,
                 keyboardType: TextInputType.name,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
-                  hintText: 'Frango',
+                  hintText: 'Nome do item',
                   label: Text('Item'),
                 ),
               ),
@@ -116,13 +116,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   label: Text('Quantidade'),
                   suffix: Text('gramas'),
                 ),
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (value) {
+                  if (_nameController.text.isNotEmpty &&
+                      _quantityController.text.isNotEmpty) {
+                    _addItemToList(Item(_nameController.text,
+                        double.parse(_quantityController.text)));
+                  }
+                },
               ),
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () {
-                if (_nameController.text.isNotEmpty && _quantityController.text.isNotEmpty) {
-                  _addItemToList(Item(_nameController.text, double.parse(_quantityController.text)));
+                if (_nameController.text.isNotEmpty &&
+                    _quantityController.text.isNotEmpty) {
+                  _addItemToList(Item(_nameController.text,
+                      double.parse(_quantityController.text)));
                 }
               },
               child: const Text('Adicionar'),
@@ -135,10 +145,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   const Text('Lista de Compras'),
                   IconButton(
-                      onPressed:items.isEmpty ?null : () {
-                        clearList();
-                      },
-                      icon:const Icon(
+                      onPressed: items.isEmpty
+                          ? null
+                          : () {
+                              clearList();
+                            },
+                      icon: const Icon(
                         Icons.delete_forever,
                       )),
                 ],
@@ -153,12 +165,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ListTile(
                     contentPadding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
                     tileColor: Theme.of(context).colorScheme.tertiary,
-                    shape:  RoundedRectangleBorder(
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                     title: Text(
                       '${items[index].captalize()} ${items[index].calculateQuantity()}',
-                      style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary),
                     ),
                     trailing: IconButton(
                         onPressed: () {
@@ -212,7 +225,7 @@ ThemeData lightTheme = ThemeData(
 ThemeData darkTheme = ThemeData(
   colorScheme: ColorScheme.fromSeed(
     seedColor: const Color(0xFF3e6cc7),
-    secondary:const Color.fromARGB(255, 249, 249, 249),
+    secondary: const Color.fromARGB(255, 249, 249, 249),
     tertiary: const Color(0xFF3b5faa),
     brightness: Brightness.dark,
   ),
