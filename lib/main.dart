@@ -69,6 +69,28 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  void editItem(int i, String name, double quantity) {
+    int? index;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].name.trim().toLowerCase() == name.trim().toLowerCase()) {
+        index = i;
+      }
+    }
+    if (index != null) {
+      Item existingItem = items[index];
+      items[index].quantity = existingItem.quantity + quantity;
+      items.removeAt(i);
+    } else {
+      items[i].name = name;
+      items[i].quantity = quantity;
+    }
+
+    _nameController.clear();
+    _quantityController.clear();
+    setState(() {});
+    Navigator.pop(context);
+  }
+
   void changeLightMode() {
     setState(() {});
   }
@@ -163,7 +185,69 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (context, index) => Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+                    leading: Icon(Icons.edit,
+                        color: Theme.of(context).colorScheme.secondary),
+                    onTap: () {
+                      _nameController.text = items[index].name;
+                       _quantityController.text = items[index].quantity.toString();
+                      showModalBottomSheet(
+                        isDismissible: true,
+                        context: context,
+                        builder: (context) => SizedBox(
+                          width: 400,
+                          height: 250,
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 50),
+                              Container(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 300),
+                                child: TextFormField(
+                                  controller: _nameController,
+                                  keyboardType: TextInputType.name,
+                                  textInputAction: TextInputAction.next,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Nome do item',
+                                    label: Text('Item'),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 300),
+                                child: TextFormField(
+                                  controller: _quantityController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                  decoration: const InputDecoration(
+                                    hintText: '150',
+                                    label: Text('Quantidade'),
+                                    suffix: Text('gramas'),
+                                  ),
+                                  textInputAction: TextInputAction.done,
+                                  onFieldSubmitted: (value) {
+                                    editItem(index, _nameController.text,
+                                        double.parse(_quantityController.text));
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              FilledButton(
+                                onPressed: () {
+                                  editItem(index, _nameController.text,
+                                      double.parse(_quantityController.text));
+                                },
+                                child: const Text('Salvar'),
+                              ),
+                              const SizedBox(height: 50),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    //contentPadding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
                     tileColor: Theme.of(context).colorScheme.tertiary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -177,9 +261,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           removeListItem(index);
                         },
-                        icon: const Icon(
-                          Icons.close,
-                        )),
+                        icon: Icon(Icons.close,
+                            color: Theme.of(context).colorScheme.secondary)),
                   ),
                 ),
               ),
