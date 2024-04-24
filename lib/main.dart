@@ -1,3 +1,5 @@
+import 'package:flu/functions.dart';
+import 'package:flu/models/item.model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +42,15 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
 
+  @override
+  void initState() {
+    Functions().decodeItemFromLocalStorage().then((value) => {
+          items = value,
+          setState(() {}),
+        });
+    super.initState();
+  }
+
   void _addItemToList(Item newValue) {
     int? index;
     for (var i = 0; i < items.length; i++) {
@@ -56,16 +67,19 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     _nameController.clear();
     _quantityController.clear();
+    Functions().encodeItemToLocalStorage(items);
     setState(() {});
   }
 
   void clearList() {
     items.clear();
+    Functions().encodeItemToLocalStorage(items);
     setState(() {});
   }
 
   void removeListItem(int index) {
     items.removeAt(index);
+    Functions().encodeItemToLocalStorage(items);
     setState(() {});
   }
 
@@ -87,6 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _nameController.clear();
     _quantityController.clear();
+    Functions().encodeItemToLocalStorage(items);
     setState(() {});
     Navigator.pop(context);
   }
@@ -105,7 +120,6 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
               onPressed: () {
-                // changeLightMode();
                 themeProvider.toggleTheme();
               },
               icon: const Icon(Icons.brightness_4))
@@ -175,6 +189,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: const Icon(
                         Icons.delete_forever,
                       )),
+                      ///TODO Fazer botão de compartilhar;
+                  // IconButton(onPressed: (){
+                  //   Share.share('text');
+                  // }, icon:const Icon(Icons.share))
                 ],
               ),
             ),
@@ -189,7 +207,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Theme.of(context).colorScheme.secondary),
                     onTap: () {
                       _nameController.text = items[index].name;
-                       _quantityController.text = items[index].quantity.toString();
+                      _quantityController.text =
+                          items[index].quantity.toString();
                       showModalBottomSheet(
                         isDismissible: true,
                         context: context,
@@ -222,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
                                   decoration: const InputDecoration(
-                                    hintText: '150',
+                                    hintText: 'Peso',
                                     label: Text('Quantidade'),
                                     suffix: Text('gramas'),
                                   ),
@@ -271,29 +290,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
-  }
-}
-
-class Item {
-  String name;
-  double quantity;
-
-  Item(this.name, this.quantity);
-
-  String captalize() {
-    String firstLetter = name[0].toUpperCase();
-    name = firstLetter + name.substring(1);
-    return name;
-  }
-
-  String calculateQuantity() {
-    switch (quantity) {
-      case > 1000:
-        return '${quantity / 1000} kg';
-      default:
-        '$quantity g';
-    }
-    return '$quantity g';
   }
 }
 
