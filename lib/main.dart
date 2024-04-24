@@ -1,5 +1,6 @@
 import 'package:calculadora_compras/functions.dart';
 import 'package:calculadora_compras/models/item.model.dart';
+import 'package:calculadora_compras/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -115,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final themeProvider = Provider.of<ThemeDataProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         title: Text(widget.title),
         actions: [
           IconButton(
@@ -130,7 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              constraints: const BoxConstraints(maxWidth: 300),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width - 16),
               child: TextFormField(
                 controller: _nameController,
                 keyboardType: TextInputType.name,
@@ -142,7 +144,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Container(
-              constraints: const BoxConstraints(maxWidth: 300),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width - 16),
               child: TextFormField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
@@ -163,7 +166,16 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 16),
-            FilledButton(
+            FilledButton.tonal(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.primaryContainer),
+                foregroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.onPrimaryContainer),
+                shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                )),
+              ),
               onPressed: () {
                 if (_nameController.text.isNotEmpty &&
                     _quantityController.text.isNotEmpty) {
@@ -189,7 +201,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: const Icon(
                         Icons.delete_forever,
                       )),
-                      ///TODO Fazer botão de compartilhar;
+
+                  ///TODO Fazer botão de compartilhar;
                   // IconButton(onPressed: (){
                   //   Share.share('text');
                   // }, icon:const Icon(Icons.share))
@@ -203,8 +216,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (context, index) => Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
-                    leading: Icon(Icons.edit,
-                        color: Theme.of(context).colorScheme.secondary),
+                    tileColor: Theme.of(context).colorScheme.primaryContainer,
+                    leading: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                     onTap: () {
                       _nameController.text = items[index].name;
                       _quantityController.text =
@@ -253,7 +269,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              FilledButton(
+                              FilledButton.tonal(
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all(
+                                      Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer),
+                                  foregroundColor: WidgetStateProperty.all(
+                                      Theme.of(context)
+                                          .colorScheme
+                                          .onPrimaryContainer),
+                                  shape: WidgetStateProperty.all(
+                                      RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  )),
+                                ),
                                 onPressed: () {
                                   editItem(index, _nameController.text,
                                       double.parse(_quantityController.text));
@@ -266,22 +296,26 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       );
                     },
-                    //contentPadding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
-                    tileColor: Theme.of(context).colorScheme.tertiary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     title: Text(
                       '${items[index].captalize()} ${items[index].calculateQuantity()}',
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary),
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                     ),
                     trailing: IconButton(
-                        onPressed: () {
-                          removeListItem(index);
-                        },
-                        icon: Icon(Icons.close,
-                            color: Theme.of(context).colorScheme.secondary)),
+                      padding: EdgeInsets.zero,
+                      tooltip: 'Remover item',
+                      onPressed: () {
+                        removeListItem(index);
+                      },
+                      icon: Icon(
+                        Icons.close,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -294,20 +328,11 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 ThemeData lightTheme = ThemeData(
-  colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFF3e6cc7),
-    secondary: Colors.white,
-    tertiary: const Color(0xFF3b5faa),
-  ),
+  colorScheme: lightColorScheme,
   useMaterial3: true,
 );
 ThemeData darkTheme = ThemeData(
-  colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFF3e6cc7),
-    secondary: const Color.fromARGB(255, 249, 249, 249),
-    tertiary: const Color(0xFF3b5faa),
-    brightness: Brightness.dark,
-  ),
+  colorScheme: darkColorScheme,
   useMaterial3: true,
 );
 
