@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:flu/models/item.model.dart';
+import 'package:calculadora_compras/models/item.model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Functions {

@@ -1,5 +1,5 @@
-import 'package:flu/functions.dart';
-import 'package:flu/models/item.model.dart';
+import 'package:calculadora_compras/functions.dart';
+import 'package:calculadora_compras/models/item.model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
