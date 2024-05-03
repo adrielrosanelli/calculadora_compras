@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:calculadora_compras/models/item.model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,7 +16,6 @@ class Functions {
     for (var item in encodedList) {
       list.add(Item.fromJson(item));
     }
-    log(jsonEncode(list),name:'listaLida');
     return list;
   }
 
@@ -29,7 +26,6 @@ class Functions {
       listToSave.add(item.toJson());
     }
     String saveList = jsonEncode(listToSave);
-    log(saveList,name:'lista');
     prefs.setString('shop_list', saveList);
   }
 }

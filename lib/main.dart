@@ -1,10 +1,11 @@
 import 'package:calculadora_compras/functions.dart';
 import 'package:calculadora_compras/models/item.model.dart';
 import 'package:calculadora_compras/utils/colors.dart';
+import 'package:calculadora_compras/utils/market_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -40,6 +41,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Item> items = [];
+  Item? selectedItem;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
 
@@ -52,11 +54,15 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
+  selectOption(Item newItem) {
+    selectedItem = newItem;
+    setState(() {});
+  }
+
   void _addItemToList(Item newValue) {
     int? index;
     for (var i = 0; i < items.length; i++) {
-      if (items[i].name.trim().toLowerCase() ==
-          newValue.name.trim().toLowerCase()) {
+      if (items[i].id == newValue.id) {
         index = i;
       }
     }
@@ -69,7 +75,9 @@ class _MyHomePageState extends State<MyHomePage> {
     _nameController.clear();
     _quantityController.clear();
     Functions().encodeItemToLocalStorage(items);
+    selectedItem = null;
     setState(() {});
+    Navigator.pop(context);
   }
 
   void clearList() {
@@ -84,37 +92,196 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
-  void editItem(int i, String name, double quantity) {
-    int? index;
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].name.trim().toLowerCase() == name.trim().toLowerCase()) {
-        index = i;
-      }
-    }
-    if (index != null) {
-      Item existingItem = items[index];
-      items[index].quantity = existingItem.quantity + quantity;
-      items.removeAt(i);
-    } else {
-      items[i].name = name;
-      items[i].quantity = quantity;
-    }
-
+  void editItem(int index, Item editedItem) {
+    items[index].quantity = editedItem.quantity;
     _nameController.clear();
     _quantityController.clear();
     Functions().encodeItemToLocalStorage(items);
+    selectedItem = null;
     setState(() {});
     Navigator.pop(context);
   }
 
-  void changeLightMode() {
-    setState(() {});
+  showNutritionalTable(Item item) {
+    return showAdaptiveDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Tabela Nutricional do - ${item.name}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  Table(
+                    border: TableBorder.all(
+                      borderRadius: BorderRadius.circular(8)
+                    ),
+                    
+                    children: [
+                      const TableRow(children: [
+                        Text('Quantidade',textAlign: TextAlign.center),
+                        Text('Caloria',textAlign: TextAlign.center),
+                        Text('Carboidrato',textAlign: TextAlign.center),
+                        Text('Gordura',textAlign: TextAlign.center)
+                      ]),
+                      TableRow(children: [
+                        Text(item.nutritionalTable.quantity.toString(),textAlign: TextAlign.center),
+                        Text(item.nutritionalTable.calorie.toString(),textAlign: TextAlign.center),
+                        Text(item.nutritionalTable.carbohydrate
+                            .toString(),textAlign: TextAlign.center),
+                        Text(item.nutritionalTable.fat.toString(),textAlign: TextAlign.center)
+                      ]),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text( '* Todos os valores são baseados em 1g/ml do produto'),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    
+                    child:const Text('* Todos os valores foram retirados do site Vitat'),
+                    onPressed: (){
+                      launchUrl(Uri.parse('https://vitat.com.br/alimentacao/busca-de-alimentos/'),mode: LaunchMode.externalApplication);
+                    },
+                      ),
+                ],
+              ),
+            ));
+    // return showAdaptiveDialog(
+    //     barrierDismissible: true,
+    //     context: context,
+    //     builder: (context) => Center(
+    //           child: Container(
+    //             padding: const EdgeInsets.all(16),
+    //             height: MediaQuery.sizeOf(context).height * 0.35,
+    //             child: Material(
+    //               child: Padding(
+    //                 padding: const EdgeInsets.all(8.0),
+    //                 child: Center(
+    //                   child: Column(
+    //                     mainAxisSize: MainAxisSize.min,
+    //                     children: [
+    //                       const SizedBox(height: 8),
+    //                       Text('Tabela Nutricional do - ${item.name}'),
+    //                       Table(
+    //                         border: TableBorder.all(),
+                            
+    //                         children: [
+    //                           const TableRow(children: [
+    //                             Text('Quantidade',textAlign: TextAlign.center),
+    //                             Text('Caloria',textAlign: TextAlign.center),
+    //                             Text('Carboidrato',textAlign: TextAlign.center),
+    //                             Text('Gordura',textAlign: TextAlign.center)
+    //                           ]),
+    //                           TableRow(children: [
+    //                             Text(item.nutritionalTable.quantity.toString(),textAlign: TextAlign.center),
+    //                             Text(item.nutritionalTable.calorie.toString(),textAlign: TextAlign.center),
+    //                             Text(item.nutritionalTable.carbohydrate
+    //                                 .toString(),textAlign: TextAlign.center),
+    //                             Text(item.nutritionalTable.fat.toString(),textAlign: TextAlign.center)
+    //                           ]),
+    //                         ],
+    //                       ),
+    //                       const SizedBox(height: 8),
+    //                       Text(
+    //                           '* Todos os valores são baseados em 1g/ml de ${item.name}'),
+    //                       const SizedBox(height: 8),
+    //                       TextButton(
+                            
+    //                         child:const Text('* Todos os valores foram retirados do site Vitat'),
+    //                         onPressed: (){
+    //                           launchUrl(Uri.parse('https://vitat.com.br/alimentacao/busca-de-alimentos/'),mode: LaunchMode.externalApplication);
+    //                         },
+    //                           ),
+    //                     ],
+    //                   ),
+    //                 ),
+    //               ),
+    //             ),
+    //           ),
+    //         ));
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeDataProvider>(context);
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showAdaptiveDialog(
+              barrierDismissible: true,
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: const Text('Adicinar Item'),
+                    contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    content: StatefulBuilder(
+                      builder: (context,state) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 300),
+                              child: Autocomplete<Item>(
+                                initialValue: TextEditingValue.empty,
+                                optionsBuilder: (textEditingValue) => marketOptions
+                                    .where((obj) => obj.name.toLowerCase().contains(
+                                        textEditingValue.text.toLowerCase())),
+                                displayStringForOption: (option) => option.name,
+                                onSelected: (option) => {state(() =>
+                                  // selectOption(option);
+                                  selectedItem = option
+                                )},
+                              ),
+                            ),
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 300),
+                              child: TextFormField(
+                                initialValue: selectedItem != null
+                                    ? selectedItem!.quantity.toString()
+                                    : '',
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
+                                decoration:  InputDecoration(
+                                  hintText: 'Quantidade',
+                                  label:const Text('Quantidade'),
+                                  suffix: Text(selectedItem != null ?selectedItem!.getSuffix():'gramas'),
+                                ),
+                                textInputAction: TextInputAction.done,
+                                onChanged: (value) =>
+                                    selectedItem!.quantity = double.parse(value),
+                                onFieldSubmitted: (value) {
+                                  _addItemToList(selectedItem!);
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton.tonal(
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all(
+                                    Theme.of(context).colorScheme.primaryContainer),
+                                foregroundColor: WidgetStateProperty.all(
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer),
+                                shape:
+                                    WidgetStateProperty.all(RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                )),
+                              ),
+                              onPressed: () {
+                                _addItemToList(selectedItem!);
+                              },
+                              child: const Text('Adicionar'),
+                            ),
+                          ],
+                        );
+                      }
+                    ),
+                  ));
+        },
+        child: const Icon(Icons.add),
+      ),
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         title: Text(widget.title),
@@ -130,61 +297,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Container(
-              constraints: BoxConstraints(
-                  maxWidth: MediaQuery.sizeOf(context).width - 16),
-              child: TextFormField(
-                controller: _nameController,
-                keyboardType: TextInputType.name,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  hintText: 'Nome do item',
-                  label: Text('Item'),
-                ),
-              ),
-            ),
-            Container(
-              constraints: BoxConstraints(
-                  maxWidth: MediaQuery.sizeOf(context).width - 16),
-              child: TextFormField(
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  hintText: '150',
-                  label: Text('Quantidade'),
-                  suffix: Text('gramas'),
-                ),
-                textInputAction: TextInputAction.done,
-                onFieldSubmitted: (value) {
-                  if (_nameController.text.isNotEmpty &&
-                      _quantityController.text.isNotEmpty) {
-                    _addItemToList(Item(_nameController.text,
-                        double.parse(_quantityController.text)));
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton.tonal(
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.primaryContainer),
-                foregroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.onPrimaryContainer),
-                shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                )),
-              ),
-              onPressed: () {
-                if (_nameController.text.isNotEmpty &&
-                    _quantityController.text.isNotEmpty) {
-                  _addItemToList(Item(_nameController.text,
-                      double.parse(_quantityController.text)));
-                }
-              },
-              child: const Text('Adicionar'),
-            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -216,86 +328,92 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (context, index) => Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
-                    tileColor: Theme.of(context).colorScheme.primaryContainer,
-                    leading: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
                     onTap: () {
-                      _nameController.text = items[index].name;
-                      _quantityController.text =
-                          items[index].quantity.toString();
-                      showModalBottomSheet(
-                        isDismissible: true,
-                        context: context,
-                        builder: (context) => SizedBox(
-                          width: 400,
-                          height: 250,
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 50),
-                              Container(
-                                constraints:
-                                    const BoxConstraints(maxWidth: 300),
-                                child: TextFormField(
-                                  controller: _nameController,
-                                  keyboardType: TextInputType.name,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Nome do item',
-                                    label: Text('Item'),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                constraints:
-                                    const BoxConstraints(maxWidth: 300),
-                                child: TextFormField(
-                                  controller: _quantityController,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                  decoration: const InputDecoration(
-                                    hintText: 'Peso',
-                                    label: Text('Quantidade'),
-                                    suffix: Text('gramas'),
-                                  ),
-                                  textInputAction: TextInputAction.done,
-                                  onFieldSubmitted: (value) {
-                                    editItem(index, _nameController.text,
-                                        double.parse(_quantityController.text));
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              FilledButton.tonal(
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(
-                                      Theme.of(context)
-                                          .colorScheme
-                                          .primaryContainer),
-                                  foregroundColor: WidgetStateProperty.all(
-                                      Theme.of(context)
-                                          .colorScheme
-                                          .onPrimaryContainer),
-                                  shape: WidgetStateProperty.all(
-                                      RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  )),
-                                ),
-                                onPressed: () {
-                                  editItem(index, _nameController.text,
-                                      double.parse(_quantityController.text));
-                                },
-                                child: const Text('Salvar'),
-                              ),
-                              const SizedBox(height: 50),
-                            ],
-                          ),
-                        ),
-                      );
+                      showNutritionalTable(items[index]);
                     },
+                    tileColor: Theme.of(context).colorScheme.primaryContainer,
+                    leading: IconButton(
+                        onPressed: () {
+                          selectedItem = Item.fromJson(items[index].toJson());
+                          showModalBottomSheet(
+                            isDismissible: true,
+                            context: context,
+                            builder: (context) => SizedBox(
+                              width: 400,
+                              height: 250,
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 50),
+                                  Container(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 300),
+                                    child: TextFormField(
+                                      initialValue: selectedItem!.name,
+                                      enabled: false,
+                                      textInputAction: TextInputAction.next,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Nome do item',
+                                        label: Text('Item'),
+                                      ),
+                                      onChanged: (value) =>
+                                          selectedItem!.name = value,
+                                    ),
+                                  ),
+                                  Container(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 300),
+                                    child: TextFormField(
+                                      initialValue:
+                                          selectedItem!.quantity.toString(),
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                      decoration:  InputDecoration(
+                                        hintText: 'Quantidade',
+                                        label: const Text('Quantidade'),
+                                        suffix: Text(selectedItem != null ?selectedItem!.getSuffix():'g'),
+                                      ),
+                                      textInputAction: TextInputAction.done,
+                                      onChanged: (value) => selectedItem!
+                                          .quantity = double.parse(value),
+                                      onFieldSubmitted: (value) {
+                                        editItem(index, selectedItem!);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  FilledButton.tonal(
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .primaryContainer),
+                                      foregroundColor: WidgetStateProperty.all(
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .onPrimaryContainer),
+                                      shape: WidgetStateProperty.all(
+                                          RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      )),
+                                    ),
+                                    onPressed: () {
+                                      editItem(index, selectedItem!);
+                                    },
+                                    child: const Text('Salvar'),
+                                  ),
+                                  const SizedBox(height: 50),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        icon: Icon(
+                          Icons.edit,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        )),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
